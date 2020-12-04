@@ -9,7 +9,7 @@ import com.qw.soul.permission.SoulPermission
 import com.qw.soul.permission.bean.Permission
 import com.qw.soul.permission.bean.Permissions
 import com.qw.soul.permission.callbcak.CheckRequestPermissionsListener
-import cproject.android.allfiltersexample.R
+import project.android.allfiltersexample.R
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**

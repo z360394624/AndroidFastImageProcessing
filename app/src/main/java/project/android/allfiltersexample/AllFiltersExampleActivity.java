@@ -15,7 +15,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-import cproject.android.allfiltersexample.R;
+import project.android.allfiltersexample.R;
 import project.android.imageprocessing.FastImageProcessingPipeline;
 import project.android.imageprocessing.FastImageProcessingView;
 import project.android.imageprocessing.filter.BasicFilter;
