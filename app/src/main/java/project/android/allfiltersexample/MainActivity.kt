@@ -35,6 +35,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, VideoToImageExampleActivity::class.java))
         }
 
+        tvSplitChangeFilterExample.setOnClickListener {
+            startActivity(Intent(this, SplitChangeExampleActivity::class.java))
+        }
 
 
         SoulPermission.getInstance().checkAndRequestPermissions(
