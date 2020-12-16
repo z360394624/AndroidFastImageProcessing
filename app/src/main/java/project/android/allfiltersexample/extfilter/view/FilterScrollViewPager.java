@@ -1,7 +1,8 @@
-package project.android.allfiltersexample.extfilter.view;
+ package project.android.allfiltersexample.extfilter.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
@@ -10,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.viewpager.widget.ViewPager;
 
 public class FilterScrollViewPager extends ViewPager {
+
+    private static final String TAG = "FilterScrollViewPager";
 
     private boolean moving = false;
     private float downX = -1;

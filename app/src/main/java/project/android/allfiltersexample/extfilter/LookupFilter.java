@@ -14,10 +14,11 @@ public class LookupFilter extends MultiInputFilter {
     private Bitmap lookupBitmap;
     private String id;
     private String name;
-
+    private String path;
 
     public LookupFilter(String path) {
         super(2);
+        this.path = path;
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inScaled = false;
         lookupBitmap = BitmapFactory.decodeFile(path, options);
@@ -92,5 +93,9 @@ public class LookupFilter extends MultiInputFilter {
 
     public String getName() {
         return name;
+    }
+
+    public Bitmap getLookupBitmap() {
+        return lookupBitmap;
     }
 }

@@ -32,6 +32,7 @@ public class SplitChangeFilter extends GroupFilter {
 
         // SplitFilter为此滤镜内置管线的输出节点
         this.registerTerminalFilter(this.splitFilter);
+
     }
 
     public ArrayList<BasicFilter> changeFilter(BasicFilter filterA, BasicFilter filterB) {

@@ -3,8 +3,11 @@ package project.android.allfiltersexample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -17,6 +20,7 @@ import java.util.List;
 
 import project.android.allfiltersexample.extfilter.LookupFilter;
 import project.android.allfiltersexample.extfilter.SplitChangeFilter;
+import project.android.allfiltersexample.extfilter.SplitChangeFilterV2;
 import project.android.allfiltersexample.extfilter.view.FilterScrollViewPager;
 import project.android.allfiltersexample.utils.FileUtil;
 import project.android.imageprocessing.FastImageProcessingPipeline;
@@ -37,7 +41,8 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
 
     private GLTextureOutputRenderer input;
 
-    private List<MultiInputFilter> filters;
+    private List<LookupFilter> filters;
+    private List<String> lookupPath = new ArrayList<>();
 
     private ScreenEndpoint screen;
 
@@ -65,6 +70,7 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
 
             @Override
             public void onFling(boolean up, float absDy) {
+                Log.e(TAG, "onFling absDy = " + absDy);
             }
 
             @Override
@@ -94,40 +100,48 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
 
         input = new ImageResourceInput(fastImageProcessingView, this, R.drawable.kukulkan);
 
-        filters = new ArrayList<MultiInputFilter>();
+        filters = new ArrayList<LookupFilter>();
 
         screen = new ScreenEndpoint(pipeline);
 
         // init filters
         /** ------------------------------------- */
         filters = getAllFilters();
-//        input.addTarget(filters.get(0));
+        input.addTarget(filters.get(0));
+        pipeline.addRootRenderer(input);
+        pipeline.startRendering();
+
+        curFilter = filters.get(0);
+        curIndex = 0;
+        /** ------------------------------------- */
+//        filterA = filters.get(5);
+//        filterB = filters.get(6);
+//        input.addTarget(filterA);
+//        input.addTarget(filterB);
+//        pipeline.addRootRenderer(input);
+//        changeFilter = new SplitChangeFilter(filterA, filterB);
+//        changeFilter.addTarget(screen);
+//        pipeline.startRendering();
+
+//        SplitChangeFilterV2 splitChangeFilterV2 = new SplitChangeFilterV2();
+//        splitChangeFilterV2.changeFilter(lookupPath.get(5), lookupPath.get(6));
+//        input.addTarget(splitChangeFilterV2);
+//        splitChangeFilterV2.addTarget(screen);
 //        pipeline.addRootRenderer(input);
 //        pipeline.startRendering();
-//
-//        curFilter = filters.get(0);
-//        curIndex = 0;
-        /** ------------------------------------- */
-        filterA = filters.get(5);
-        filterB = filters.get(6);
-        input.addTarget(filterA);
-        input.addTarget(filterB);
-        pipeline.addRootRenderer(input);
-        changeFilter = new SplitChangeFilter(filterA, filterB);
-        changeFilter.addTarget(screen);
-        pipeline.startRendering();
+//        fastImageProcessingView.requestRender();
 
     }
 
-    private void addFilter(MultiInputFilter filter) {
+    private void addFilter(LookupFilter filter) {
         filters.add(filter);
         filter.addTarget(screen);
         filter.registerFilterLocation(input);
     }
 
 
-    private List<MultiInputFilter> getAllFilters() {
-        List<MultiInputFilter> filters = new ArrayList<>();
+    private List<LookupFilter> getAllFilters() {
+        List<LookupFilter> filters = new ArrayList<>();
         File dir = new File(FileUtil.getCacheDirectory(this), "filterData");
         File filtersImageHomeDir = new File(dir.getPath(), "filterImg");
         File[] folders = filtersImageHomeDir.listFiles();
@@ -152,6 +166,7 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
                     Log.e(TAG, "file not exists: " + filePath);
                     continue;
                 }
+                lookupPath.add(filePath);
                 LookupFilter filter = new LookupFilter(filePath);
                 filter.setId(id);
                 filter.setName(firstName);
@@ -163,9 +178,11 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
     }
 
 
-    private MultiInputFilter filterA;
-    private MultiInputFilter filterB;
-    private SplitChangeFilter changeFilter;
+//    private MultiInputFilter filterA;
+//    private MultiInputFilter filterB;
+//    private SplitChangeFilter changeFilter;
+    private SplitChangeFilterV2 splitChangeFilterV2;
+
     private void switchFilter(boolean next, float offset) {
         int targetIndex = 0;
         if (next) {
@@ -180,38 +197,68 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
             targetIndex = 0;
         }
         curOffset = next ? -offset : 1 - offset;
-        if (filterA == null) {
-            filterA = filters.get(curIndex);
-            input.addTarget(filterA);
-            Log.e(TAG, "filterA = " + ((LookupFilter)filterA).getName());
-        } else {
-            input.removeTarget(filterA);
-        }
 
-        if (filterB == null) {
-            filterB = filters.get(targetIndex);
-            input.addTarget(filterB);
-            Log.e(TAG, "filterB = " + ((LookupFilter)filterB).getName());
-        } else {
-            input.removeTarget(filterB);
-        }
-        if ( changeFilter == null && filterA != null && filterB != null) {
-            changeFilter = new SplitChangeFilter(filterA, filterB);
-            pipeline.pauseRendering();
-
-            changeFilter.changeFilter(filterA, filterB);
-
-            pipeline.startRendering();
-            fastImageProcessingView.requestRender();
-            Log.e(TAG, "change at here");
-        }
-//        if (changeFilter != null) {
-//            WindowManager wm = this.getWindowManager();
-//            int width = wm.getDefaultDisplay().getWidth();
-//            float ration = Math.abs(offset)/width;
-//            Log.e(TAG, "ration = " + ration);
-//            changeFilter.changeSplitPoint(ration);
+//        if (filterA == null) {
+//            filterA = filters.get(curIndex);
+//            input.addTarget(filterA);
+//            Log.e(TAG, "filterA: = " + ((LookupFilter) filterA).getName() + "; Index = " + curIndex);
 //        }
+//        if (filterB == null) {
+//            filterB = filters.get(targetIndex);
+//            input.addTarget(filterB);
+//            Log.e(TAG, "filterB = " + ((LookupFilter) filterB).getName() + "; Index = " + targetIndex);
+//        }
+//        if (changeFilter == null && filterA != null && filterB != null) {
+//            changeFilter = new SplitChangeFilter(filterA, filterB);
+//            pipeline.pauseRendering();
+//            if (targetIndex > curIndex) {
+//                changeFilter.changeFilter(filterA, filterB);
+//            } else {
+//                changeFilter.changeFilter(filterB, filterA);
+//            }
+//            changeFilter.addTarget(screen);
+//            pipeline.startRendering();
+//        }
+//        if (changeFilter != null) {
+//            WindowManager wm = getWindowManager();
+//            int width = wm.getDefaultDisplay().getWidth();
+//            float ration = Math.abs(offset) / width;
+//            changeFilter.changeSplitPoint(next ? 1.0f - ration : ration);
+//            fastImageProcessingView.requestRender();
+//        }
+
+        if (splitChangeFilterV2 == null) {
+            splitChangeFilterV2 = new SplitChangeFilterV2();
+            pipeline.pauseRendering();
+            input.removeTarget(curFilter);
+            input.addTarget(splitChangeFilterV2);
+            if (targetIndex > curIndex) {
+                splitChangeFilterV2.changeFilter(filters.get(curIndex).getLookupBitmap(), filters.get(targetIndex).getLookupBitmap());
+            } else {
+                splitChangeFilterV2.changeFilter(filters.get(targetIndex).getLookupBitmap(), filters.get(curIndex).getLookupBitmap());
+            }
+            splitChangeFilterV2.addTarget(screen);
+            pipeline.startRendering();
+        }
+        if (splitChangeFilterV2 != null) {
+            WindowManager wm = getWindowManager();
+            int width = wm.getDefaultDisplay().getWidth();
+            float ration = Math.abs(offset) / width;
+            splitChangeFilterV2.setSplitPoint(next ? 1.0f - ration : ration);
+            Log.e(TAG, "switchFilter: requestRender");
+            fastImageProcessingView.requestRender();
+        }
+
+        /** ------------------------- **/
+//        if (changeFilter != null) {
+//            changeFilter.changeFilter(filterA, filterB);
+//        }
+//        WindowManager wm = getWindowManager();
+//        int width = wm.getDefaultDisplay().getWidth();
+//        float ration = Math.abs(offset) / width;
+//        Log.e(TAG, "ration: " + ration);
+//        changeFilter.changeSplitPoint(next ? 1.0f - ration : ration);
+//        fastImageProcessingView.requestRender();
     }
 
     private void switchFilter(boolean last, boolean smooth, boolean cancel) {
@@ -229,15 +276,23 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
         stopRendering();
         curIndex = endIndex;
         curOffset = 0;
-        Log.e(TAG, "switchFilter: endFilterIndex = " + curIndex);
         // 渲染当前滤镜
         loadFilter();
 
-        if (changeFilter != null) {
-            changeFilter.destroy();
-            changeFilter = null;
-            filterB = null;
-            filterA = null;
+//        if (changeFilter != null) {
+//            input.removeTarget(filterA);
+//            input.removeTarget(filterB);
+//            changeFilter.destroy();
+//            changeFilter = null;
+//            filterB = null;
+//            filterA = null;
+//        }
+
+        if (splitChangeFilterV2 != null) {
+            input.removeTarget(splitChangeFilterV2);
+            splitChangeFilterV2.removeTarget(screen);
+            splitChangeFilterV2.destroy();
+            splitChangeFilterV2 = null;
         }
     }
 
@@ -250,7 +305,7 @@ public class SplitChangeExampleActivity extends AppCompatActivity {
     private void loadFilter() {
         Log.e(TAG, "loadFilter: new = " + curIndex);
         input.addTarget(filters.get(curIndex));
-        filterNameView.setText(((LookupFilter)filters.get(curIndex)).getName());
+        filterNameView.setText(((LookupFilter) filters.get(curIndex)).getName());
         pipeline.startRendering();
         fastImageProcessingView.requestRender();
     }

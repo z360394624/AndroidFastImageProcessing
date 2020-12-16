@@ -16,7 +16,7 @@ public class SplitFilter extends MultiInputFilter {
                     + "uniform sampler2D u_Texture1;\n"
                     + "uniform float splitPoint;\n"
                     + "void main() {\n"
-                    + "    if (v_TexCoord.x <= 0.5) {\n"
+                    + "    if (v_TexCoord.x <= splitPoint) {\n"
                     + "        gl_FragColor = texture2D(u_Texture0, v_TexCoord);\n"
                     + "    } else {\n"
                     + "        gl_FragColor = texture2D(u_Texture1, v_TexCoord);\n"
